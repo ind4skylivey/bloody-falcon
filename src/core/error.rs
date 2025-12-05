@@ -1,25 +1,33 @@
 use std::io;
 
-use thiserror::Error;
-
-#[derive(Debug, Error)]
+#[derive(thiserror::Error, Debug)]
 pub enum FalconError {
     #[error("network error: {0}")]
-    Network(#[from] reqwest::Error),
+    Network(String),
+    #[error("timeout")]
+    Timeout,
+    #[error("http error: {0}")]
+    Http(String),
     #[error("config error: {0}")]
     Config(String),
-    #[error("timeout while contacting provider: {0}")]
-    Timeout(String),
     #[error("provider error: {0}")]
     Provider(String),
-    #[error("io error: {0}")]
+    #[error("unknown error")]
+    Unknown,
+    #[error(transparent)]
     Io(#[from] io::Error),
-    #[error("unknown error: {0}")]
-    Unknown(String),
 }
 
-impl From<tokio::task::JoinError> for FalconError {
-    fn from(err: tokio::task::JoinError) -> Self {
-        FalconError::Unknown(err.to_string())
+impl From<reqwest::Error> for FalconError {
+    fn from(err: reqwest::Error) -> Self {
+        if err.is_timeout() {
+            FalconError::Timeout
+        } else if err.is_connect() {
+            FalconError::Network(err.to_string())
+        } else if err.is_status() {
+            FalconError::Http(err.to_string())
+        } else {
+            FalconError::Unknown
+        }
     }
 }

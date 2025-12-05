@@ -1,19 +1,30 @@
-# BLOODY-F4LCON production config
-# Replace provider URLs or add new ones; {username} placeholder is required.
+# BLOODY-F4LCON default configuration
 
-providers = [
-  { name = "GitHub", url = "https://github.com/{username}" },
-  { name = "Reddit", url = "https://www.reddit.com/user/{username}" },
-  { name = "Steam", url = "https://steamcommunity.com/id/{username}" },
-  { name = "Twitter", url = "https://twitter.com/{username}" },
-  { name = "PSNProfiles", url = "https://psnprofiles.com/{username}" }
-]
+timeout_ms = 5000
+max_concurrent_requests = 5
+cache_ttl_seconds = 600
 
-# HTTP request timeout per probe (ms)
-timeout_ms = 4000
+[[providers]]
+name = "github"
+enabled = true
+base_url = "https://github.com/{username}"
 
-# Maximum concurrent provider probes
-max_concurrent_scans = 5
+[[providers]]
+name = "reddit"
+enabled = true
+base_url = "https://www.reddit.com/user/{username}"
 
-# Cache TTL in seconds (0 disables cache)
-cache_ttl_secs = 900
+[[providers]]
+name = "steam"
+enabled = true
+base_url = "https://steamcommunity.com/id/{username}"
+
+[[providers]]
+name = "twitter"
+enabled = true
+base_url = "https://twitter.com/{username}"
+
+[[providers]]
+name = "psnprofiles"
+enabled = true
+base_url = "https://psnprofiles.com/{username}"

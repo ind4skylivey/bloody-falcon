@@ -1,4 +1,6 @@
-# 🦅 BLOODY-F4LCON
+<img width="3168" height="1344" alt="bloodyf4lcon" src="https://github.com/user-attachments/assets/2683095d-634b-4d3b-9c3c-1a321b9e48bf" />
+
+🦅 BLOODY-F4LCON
 
 Terminal-first OSINT recon for usernames. Red/Black vibe, production-hardening: rate limiting, cache (RAM/opt-in disk), configurable providers, headless JSON mode.
 

@@ -6,3 +6,4 @@ target/
 .idea/
 data/*.sqlite
 data/falcon.log
+data/cache.json

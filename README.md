@@ -1,24 +1,24 @@
 # 🦅 BLOODY-F4LCON
 
-Terminal-first OSINT recon for usernames. Red/Black vibe, production-hardening: rate limiting, cache, configurable providers, headless JSON mode.
+Terminal-first OSINT recon for usernames. Red/Black vibe, production-hardening: rate limiting, cache (RAM/opt-in disk), configurable providers, headless JSON mode.
 
 ## ✨ Features
 - Live provider checks (GitHub, Reddit, Steam, Twitter, PSNProfiles by default)
-- Rate limiting + backoff, cache with TTL
-- Configurable providers/user-agent via TOML
-- TUI with active targets, intel feed, logs
-- Headless mode (`--no-tui`) for scripting
+- Rate limiting + backoff, cache with TTL (RAM by default; optional disk)
+- Configurable providers/user-agent/disk-cache via TOML or flags
+- TUI with active targets, intel feed, colored states, logs
+- Headless mode (`--no-tui`) for scripting (JSON output)
 - Tracing to stdout + `data/falcon.log`
 
 ## 📦 Install
 **From repo**
 ```bash
-cargo install --path .
+cargo install --path . --force
 ```
 
-**Direct from Git**
+**Direct from Git (SSH)**
 ```bash
-cargo install --git git@github.com:ind4skylivey/bloody-f4lcon.git
+cargo install --git ssh://git@github.com/ind4skylivey/bloody-f4lcon.git --force
 ```
 
 ## 🚀 Quick Start
@@ -29,8 +29,11 @@ bloody-f4lcon shadow
 # Limit to GitHub + Reddit
 bloody-f4lcon shadow --providers github,reddit
 
-# Disable cache
+# Disable RAM cache
 bloody-f4lcon shadow --no-cache
+
+# Enable disk cache (opt-in) at default path
+bloody-f4lcon shadow --disk-cache
 
 # Custom config
 bloody-f4lcon shadow --config config/bloodyf4lcon.toml
@@ -48,7 +51,7 @@ bloody-f4lcon shadow --no-tui > result.json
 Panels:
 - Header: version + platform count + hint strip
 - Active Targets: index, id, hits, status
-- Intel Feed: status, hits, platforms, restricted/rate-limited/failed, optional label
+- Intel Feed: status, hits, platforms (green), restricted (yellow), rate-limited (magenta), failed (red), optional label
 - Scan Engine: progress gauge or prompt
 - System Logs: rolling feed
 
@@ -59,6 +62,8 @@ timeout_ms = 5000
 max_concurrent_requests = 5
 cache_ttl_seconds = 600
 user_agent = "bloody-f4lcon/1.0 (+https://github.com/ind4skylivey/bloody-f4lcon)"
+disk_cache_enabled = false
+disk_cache_path = "data/cache.json"
 
 [[providers]]
 name = "github"
@@ -69,20 +74,30 @@ base_url = "https://github.com/{username}"
 Flags override pieces:
 - `--config <path>` load alternate file
 - `--providers a,b,c` enable subset (case-insensitive)
-- `--no-cache` disable cache
+- `--no-cache` disable in-memory cache
+- `--disk-cache` enable disk cache (path from config or `--disk-cache-path`)
+- `--disk-cache-path <path>` override disk cache location
 - `--verbose` (repeat for debug/trace)
 - `--log-file <path>` change log destination
 - `--no-tui` headless JSON
+- `--label <text>` label for initial target
 
 ## 🧪 Development
 - Format: `cargo fmt`
-- Lint: `cargo clippy -- -D warnings`
+- Lint: `cargo clippy --all-targets -- -D warnings`
 - Test: `cargo test`
 
-GitHub Actions CI runs fmt + clippy + tests.
+CI: GitHub Actions runs fmt + clippy + tests on push/PR; tag `v*` builds a release binary (Linux x86_64 artifact).
 
-## ⚖️ Legal / Ethical
-Use only on targets you are authorized to probe. OSINT still carries privacy and ToS considerations. You are responsible for respecting platform policies and local laws.
+## 🗂️ Releases
+- Local release build: `cargo build --release` → `target/release/bloody-f4lcon`
+- CI tagged release: push tag `vX.Y.Z` → workflow builds and uploads Linux binary artifact.
+
+## 🔒 Privacy & Data Handling
+- Data minimization: cache stores only username, timestamp, provider states (hit/restricted/rate-limited/failed). No raw HTTP bodies stored or logged.
+- Disk cache is **opt-in** (`--disk-cache` or config `disk_cache_enabled = true`).
+- Clear cache: `rm -f data/cache.json data/falcon.log` (and any custom path).
+- Respect platform ToS and legal boundaries; OSINT only where authorized.
 
 ## 📸 Visual
 ![demo](docs/screenshot.png)

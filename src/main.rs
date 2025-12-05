@@ -38,6 +38,12 @@ struct Cli {
     /// Run without TUI; print JSON result to stdout
     #[arg(long)]
     no_tui: bool,
+    /// Enable persistent disk cache
+    #[arg(long)]
+    disk_cache: bool,
+    /// Path for disk cache (JSON/SQLite placeholder)
+    #[arg(long)]
+    disk_cache_path: Option<String>,
 }
 
 #[tokio::main]
@@ -46,8 +52,15 @@ async fn main() -> Result<(), FalconError> {
 
     init_tracing(&cli)?;
 
-    let cfg = load_config(cli.config.as_deref())?;
-    let cfg = apply_provider_filter(cfg, cli.providers.as_deref());
+    let mut cfg = load_config(cli.config.as_deref())?;
+    cfg = apply_provider_filter(cfg, cli.providers.as_deref());
+    if cli.disk_cache {
+        cfg.disk_cache_enabled = true;
+    }
+    if let Some(path) = cli.disk_cache_path {
+        cfg.disk_cache_enabled = true;
+        cfg.disk_cache_path = path;
+    }
     let engine = Arc::new(Engine::new(cfg)?);
     let mut app = App::new();
     if let Some(initial) = cli.target {

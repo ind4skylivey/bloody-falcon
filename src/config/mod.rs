@@ -17,6 +17,8 @@ pub struct AppConfig {
     pub max_concurrent_requests: usize,
     pub cache_ttl_seconds: u64,
     pub user_agent: String,
+    pub disk_cache_enabled: bool,
+    pub disk_cache_path: String,
     pub providers: Vec<ProviderConfig>,
 }
 
@@ -53,6 +55,8 @@ fn default_config() -> AppConfig {
         cache_ttl_seconds: 600,
         user_agent: "bloody-f4lcon/1.0 (+https://github.com/ind4skylivey/bloody-f4lcon)"
             .to_string(),
+        disk_cache_enabled: false,
+        disk_cache_path: "data/cache.json".to_string(),
         providers: vec![
             ProviderConfig {
                 name: "github".to_string(),

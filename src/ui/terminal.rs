@@ -234,8 +234,8 @@ fn draw_ui(f: &mut ratatui::Frame, app: &App) {
     };
 
     intel_lines.push(Line::from(vec![
-        Span::styled("Platforms: ", Style::default().fg(Color::White)),
-        Span::styled(platform_line, Style::default().fg(Color::Yellow)),
+        Span::styled("Hits: ", Style::default().fg(Color::White)),
+        Span::styled(platform_line, Style::default().fg(Color::Green)),
     ]));
 
     if !current.restricted.is_empty() {
@@ -243,7 +243,7 @@ fn draw_ui(f: &mut ratatui::Frame, app: &App) {
             Span::styled("Restricted: ", Style::default().fg(Color::White)),
             Span::styled(
                 current.restricted.join(", "),
-                Style::default().fg(Color::Blue),
+                Style::default().fg(Color::Yellow),
             ),
         ]));
     }
@@ -253,7 +253,7 @@ fn draw_ui(f: &mut ratatui::Frame, app: &App) {
             Span::styled("Rate limited: ", Style::default().fg(Color::White)),
             Span::styled(
                 current.rate_limited.join(", "),
-                Style::default().fg(Color::Red),
+                Style::default().fg(Color::Magenta),
             ),
         ]));
     }
@@ -261,10 +261,7 @@ fn draw_ui(f: &mut ratatui::Frame, app: &App) {
     if !current.failed.is_empty() {
         intel_lines.push(Line::from(vec![
             Span::styled("Failed: ", Style::default().fg(Color::White)),
-            Span::styled(
-                current.failed.join(" | "),
-                Style::default().fg(Color::Magenta),
-            ),
+            Span::styled(current.failed.join(" | "), Style::default().fg(Color::Red)),
         ]));
     }
 

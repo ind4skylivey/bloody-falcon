@@ -8,13 +8,14 @@ use tokio::sync::Semaphore;
 
 use crate::{
     config::{AppConfig, ProviderConfig},
+    core::disk_cache::DiskCache,
     core::error::FalconError,
     modules::recon::username::check_provider,
 };
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Debug, Serialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ReconResult {
     pub hits: usize,
     pub platforms: Vec<String>,
@@ -34,6 +35,7 @@ pub struct Engine {
     pub config: AppConfig,
     semaphore: Arc<Semaphore>,
     cache: Mutex<HashMap<String, CachedResult>>,
+    disk_cache: Option<DiskCache>,
 }
 
 impl Engine {
@@ -46,10 +48,19 @@ impl Engine {
             .build()
             .map_err(FalconError::from)?;
 
+        let disk_cache = if config.disk_cache_enabled {
+            Some(DiskCache::new(std::path::Path::new(
+                &config.disk_cache_path,
+            ))?)
+        } else {
+            None
+        };
+
         Ok(Self {
             client,
             semaphore: Arc::new(Semaphore::new(config.max_concurrent_requests)),
             cache: Mutex::new(HashMap::new()),
+            disk_cache,
             config,
         })
     }
@@ -62,6 +73,13 @@ impl Engine {
         if use_cache {
             if let Some(result) = self.check_cache(username) {
                 return Ok(result);
+            }
+            if let Some(disk) = &self.disk_cache {
+                match disk.get(username, Duration::from_secs(self.config.cache_ttl_seconds)) {
+                    Ok(Some(result)) => return Ok(result),
+                    Ok(None) => {}
+                    Err(e) => tracing::warn!("disk cache read error: {}", e),
+                }
             }
         }
 
@@ -109,6 +127,12 @@ impl Engine {
                     timestamp: Instant::now(),
                 },
             );
+            if let Some(disk) = &self.disk_cache {
+                let _ = disk.purge_expired(Duration::from_secs(self.config.cache_ttl_seconds));
+                if let Err(e) = disk.put(username, &result) {
+                    tracing::warn!("disk cache write error: {}", e);
+                }
+            }
         }
 
         Ok(result)

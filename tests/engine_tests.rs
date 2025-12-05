@@ -15,6 +15,8 @@ async fn engine_hits_mock_provider() {
         max_concurrent_requests: 2,
         cache_ttl_seconds: 10,
         user_agent: "bf-test".to_string(),
+        disk_cache_enabled: false,
+        disk_cache_path: "data/cache.json".into(),
         providers: vec![ProviderConfig {
             name: "mock".into(),
             enabled: true,

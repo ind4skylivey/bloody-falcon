@@ -94,6 +94,19 @@ impl App {
     }
 
     pub fn complete_scan(&mut self, idx: usize, outcome: ReconResult) {
+        #[derive(Default)]
+        struct LogInfo {
+            id: String,
+            hits: usize,
+            restricted: String,
+            rate_limited: String,
+            failed: String,
+            has_res: bool,
+            has_rl: bool,
+            has_fail: bool,
+        }
+
+        let mut log_items: Option<LogInfo> = None;
         if let Some(target) = self.targets.get_mut(idx) {
             target.status = Status::Found;
             target.hits = outcome.hits;
@@ -102,9 +115,31 @@ impl App {
             target.failed = outcome.failed;
             target.restricted = outcome.restricted;
             target.rate_limited = outcome.rate_limited;
-            let id = target.id.clone();
-            let hits = target.hits;
-            self.log(format!("✅ {} - {} hits found!", id, hits));
+            log_items = Some(LogInfo {
+                id: target.id.clone(),
+                hits: target.hits,
+                restricted: target.restricted.join(", "),
+                rate_limited: target.rate_limited.join(", "),
+                failed: target.failed.join(" | "),
+                has_res: !target.restricted.is_empty(),
+                has_rl: !target.rate_limited.is_empty(),
+                has_fail: !target.failed.is_empty(),
+            });
+        }
+        if let Some(info) = log_items {
+            self.log(format!("✅ {} - {} hits found!", info.id, info.hits));
+            if info.has_res {
+                self.log(format!("[WARN] Restricted providers: {}", info.restricted));
+            }
+            if info.has_rl {
+                self.log(format!(
+                    "[WARN] Rate limited providers: {}",
+                    info.rate_limited
+                ));
+            }
+            if info.has_fail {
+                self.log(format!("[WARN] Failed providers: {}", info.failed));
+            }
         }
         self.scanning = false;
     }

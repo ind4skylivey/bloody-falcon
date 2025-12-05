@@ -4,6 +4,8 @@ timeout_ms = 5000
 max_concurrent_requests = 5
 cache_ttl_seconds = 600
 user_agent = "bloody-f4lcon/1.0 (+https://github.com/ind4skylivey/bloody-f4lcon)"
+disk_cache_enabled = false
+disk_cache_path = "data/cache.json"
 
 [[providers]]
 name = "github"

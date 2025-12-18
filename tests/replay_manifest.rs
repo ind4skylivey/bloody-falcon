@@ -37,6 +37,6 @@ fn replay_manifest_is_deterministic() {
 
     assert_eq!(
         hash,
-        "3ee1a1a4e57123befeec16dd309edaeae2913ed84b73b4affe86518f29f7d46d"
+        "20ac87364eea5b216d5b1a43395bbb635262fdf672b24d74636f00c4ee97d811"
     );
 }

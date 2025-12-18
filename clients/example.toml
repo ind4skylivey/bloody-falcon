@@ -1,34 +1,34 @@
-# Example client scope (fictional placeholders only).
+# Example client scope (template only; not production-ready).
 
-# Brand terms used for matching public signals.
-brand_terms = ["examplecorp", "example cloud"]
+# Brand terms used for matching public signals (fictional placeholders).
+brand_terms = ["ExampleCo", "Fictional Brand"]
 
-# Official domains owned by the client.
-domains = ["examplecorp.test", "example-cloud.test"]
+# Official domains owned by the client (reserved example domains only).
+domains = ["example.com", "example.org"]
 
-# Public product names (for correlation and watchlists).
-products = ["ExampleVault"]
+# Public product names (fictional placeholders).
+products = ["ExampleProduct", "DemoService"]
 
-# Official social handles (public only).
-official_handles = ["@examplecorp", "@examplecorp_support"]
+# Official social handles (fictional placeholders).
+official_handles = ["@exampleco", "@example_support"]
 
-# Sources that are allowed for this client scope.
+# Sources allowed for this scope (safe defaults for a template).
 allowed_sources = ["fixture", "offline"]
 
-# Detectors that are allowed for this client scope.
+# Detectors allowed for this scope (safe defaults for a template).
 allowed_detectors = ["typosquat"]
 
-# Watchlist keywords tied to fraud/abuse themes (scope-approved).
-watch_keywords = ["invoice", "reset password", "wire", "stealer"]
+# Watchlist keywords (generic placeholders; not operational).
+watch_keywords = ["placeholder-keyword-1", "placeholder-keyword-2"]
 
-# Negative keywords to suppress noise.
-negative_keywords = ["career", "jobs", "press release"]
+# Negative keywords (generic placeholders; not operational).
+negative_keywords = ["placeholder-noise-1", "placeholder-noise-2"]
 
 [privacy]
 # Store raw evidence content (false means redact).
 store_raw = false
-# Patterns to redact when store_raw is false.
-redact_patterns = ["AKIA[0-9A-Z]{16}", "-----BEGIN PRIVATE KEY-----"]
+# Patterns to redact when store_raw is false (example placeholders).
+redact_patterns = ["REDACT_THIS_PATTERN", "REDACT_THIS_OTHER_PATTERN"]
 # Retention window (days) for evidence storage.
 max_evidence_retention_days = 30
 

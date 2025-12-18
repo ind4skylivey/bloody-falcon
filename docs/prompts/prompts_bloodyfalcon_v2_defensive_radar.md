@@ -127,10 +127,10 @@ Implement using this module architecture unless a change is strongly justified.
 Implement `clients/<client>.toml` parsing + validation:
 
 ```toml
-brand_terms = ["examplecorp", "example cloud"]
-domains = ["examplecorp.test", "example-cloud.test"]
+brand_terms = ["exampleco", "example cloud"]
+domains = ["example.com", "example.org"]
 products = ["ExampleVault", "ExamplePay"]
-official_handles = ["@examplecorp", "@examplecorp_support"]
+official_handles = ["@exampleco", "@example_support"]
 
 allowed_sources = ["github", "paste", "ct", "social", "feeds"]
 allowed_detectors = ["impersonation", "typosquat", "ct_logs", "exposure_code", "exposure_paste", "mention_spike"]

@@ -43,7 +43,7 @@ bloodyfalcon scan --demo-safe --format jsonl --output out/
 
 ## Example Sanitized Output (JSONL)
 ```json
-{"id":"sig_...","signal_type":"TyposquatDomain","subject":"examplecorp.test","source":"typosquat","evidence_ref":"ev_...","timestamp":"2025-01-02T00:00:00Z","indicators":["examplecorp-login.test"],"confidence":60,"severity":"Medium","rationale":"...","recommended_actions":["Review domain"],"dedupe_key":"TyposquatDomain:examplecorp.test:examplecorp-login.test","suppression_reason":"generic-token typosquat without corroboration","policy_flags":["suppressed:generic_token"]}
+{"id":"sig_...","signal_type":"TyposquatDomain","subject":"example.com","source":"typosquat","evidence_ref":"ev_...","timestamp":"2025-01-02T00:00:00Z","indicators":["example.org"],"confidence":60,"severity":"Medium","rationale":"...","recommended_actions":["Review domain"],"dedupe_key":"TyposquatDomain:example.com:example.org","suppression_reason":"generic-token typosquat without corroboration","policy_flags":["suppressed:generic_token"]}
 ```
 
 ## Trend Examples

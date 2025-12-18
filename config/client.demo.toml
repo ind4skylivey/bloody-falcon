@@ -1,0 +1,16 @@
+brand_terms = ["acme", "acme corp", "acme cloud"]
+domains = ["acme.example", "acme-cloud.example"]
+executives = ["Jane Doe", "John Smith"]
+approved_assets = ["ACME", "ACME-LOGO-RED"]
+watchlists = ["invoice", "password reset", "vpn", "credential", "billing"]
+allowed_sources = ["username-providers", "typosquat", "ct-logs", "leak-keywords", "paste"]
+typosquat_locale = "us"
+typosquat_distance_weight = 10
+
+[rate_limits]
+paste_min_interval_ms = 800
+github_min_interval_ms = 1000
+
+[alert_policy]
+immediate_threshold = { severity = "high", confidence = 80 }
+digest_frequency = "daily"

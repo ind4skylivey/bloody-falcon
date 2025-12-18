@@ -10,6 +10,8 @@ pub enum FalconError {
     Http(String),
     #[error("config error: {0}")]
     Config(String),
+    #[error("db error: {0}")]
+    Db(String),
     #[error("provider error: {0}")]
     Provider(String),
     #[error("unknown error")]
@@ -29,5 +31,11 @@ impl From<reqwest::Error> for FalconError {
         } else {
             FalconError::Unknown
         }
+    }
+}
+
+impl From<rusqlite::Error> for FalconError {
+    fn from(err: rusqlite::Error) -> Self {
+        FalconError::Db(err.to_string())
     }
 }

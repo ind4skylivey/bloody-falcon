@@ -4,6 +4,7 @@ target/
 *.log
 .vscode/
 .idea/
+.cargo/
 data/*.sqlite
 data/falcon.log
 data/cache.json

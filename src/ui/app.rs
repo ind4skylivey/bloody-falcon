@@ -1,8 +1,8 @@
 use std::fmt;
 
-use chrono::Local;
+use chrono::{Local, Utc};
 
-use crate::core::engine::ReconResult;
+use crate::core::{engine::ReconResult, signal::Signal};
 
 #[derive(Clone)]
 pub struct Target {
@@ -40,6 +40,14 @@ pub struct App {
     pub input: String,
     pub logs: Vec<String>,
     pub scanning: bool,
+    pub signals: Vec<Signal>,
+    pub selected_signal: usize,
+    pub show_signal_modal: bool,
+    pub start_time: chrono::DateTime<chrono::Utc>,
+    pub new_signals_count: usize,
+    pub filter_severity: Option<crate::core::signal::Severity>,
+    pub filter_tag: Option<String>,
+    pub modal_scroll: usize,
 }
 
 impl App {
@@ -55,6 +63,14 @@ impl App {
                 "[SYSTEM] ENTER TARGET IDENTIFIER".to_string(),
             ],
             scanning: false,
+            signals: Vec::new(),
+            selected_signal: 0,
+            show_signal_modal: false,
+            start_time: Utc::now(),
+            new_signals_count: 0,
+            filter_severity: None,
+            filter_tag: None,
+            modal_scroll: 0,
         }
     }
 
@@ -153,6 +169,22 @@ impl App {
             self.log(format!("⚠️ Scan failed: {}", err));
         }
         self.scanning = false;
+    }
+
+    pub fn add_signals(&mut self, mut signals: Vec<Signal>) {
+        for s in signals.drain(..) {
+            if s.first_seen >= self.start_time {
+                self.new_signals_count += 1;
+            }
+            self.signals.push(s);
+        }
+        if self.signals.len() > 50 {
+            let drain_len = self.signals.len() - 50;
+            self.signals.drain(0..drain_len);
+        }
+        if self.selected_signal >= self.signals.len() {
+            self.selected_signal = self.signals.len().saturating_sub(1);
+        }
     }
 
     pub fn next_target(&mut self) {

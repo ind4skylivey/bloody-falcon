@@ -2,15 +2,17 @@
 
 🦅 BLOODY-F4LCON
 
-Terminal-first OSINT recon for usernames. Red/Black vibe, production-hardening: rate limiting, cache (RAM/opt-in disk), configurable providers, headless JSON mode.
+Terminal-first OSINT recon for usernames. Red/Black vibe, production-hardening: rate limiting, cache (RAM/opt-in disk), configurable providers, headless signals output.
 
 ## ✨ Features
 - Live provider checks (GitHub, Reddit, Steam, Twitter, PSNProfiles by default)
 - Rate limiting + backoff, cache with TTL (RAM by default; optional disk)
 - Configurable providers/user-agent/disk-cache via TOML or flags
 - TUI with active targets, intel feed, colored states, logs
-- Headless mode (`--no-tui`) for scripting (JSON output)
+- Headless mode (`--no-tui`) for scripting; emits signals (JSONL/SARIF/Markdown) and stores history in SQLite
+- Signal sources: username hits, typosquat + RDAP age, keyboard/homoglyph variants, CT logs, GitHub code keyword leaks (optional `GITHUB_TOKEN`), paste search (optional `PASTE_TOKEN`)
 - Tracing to stdout + `data/falcon.log`
+- Client scope files (`client.toml`) define brand terms/domains; without scope tool runs in demo mode
 
 ## 📦 Install
 **From repo**
@@ -40,8 +42,20 @@ bloody-f4lcon shadow --disk-cache
 # Custom config
 bloody-f4lcon shadow --config config/bloodyf4lcon.toml
 
-# Headless JSON (no TUI)
-bloody-f4lcon shadow --no-tui > result.json
+# Headless signals (no TUI) with scope, JSONL output
+bloody-f4lcon shadow --no-tui --scope config/client.demo.toml --format jsonl --output data/signals.jsonl
+
+# Headless with digest + webhook alerts
+bloody-f4lcon shadow --no-tui --scope config/client.demo.toml --format jsonl --digest --alert-webhook https://hooks.slack.com/...
+
+# Headless with GitHub leak search (requires token)
+GITHUB_TOKEN=ghp_xxx bloody-f4lcon shadow --no-tui --scope config/client.demo.toml --format sarif
+
+# Headless including paste search (requires PASTE_TOKEN)
+PASTE_TOKEN=psb_xxx bloody-f4lcon shadow --no-tui --scope config/client.demo.toml --format jsonl
+
+# Paste + GitHub gist fallback (optional both tokens)
+GITHUB_TOKEN=ghp_xxx PASTE_TOKEN=psb_xxx bloody-f4lcon shadow --no-tui --scope config/client.demo.toml --format jsonl
 ```
 
 ## 🎮 TUI Controls
@@ -49,11 +63,17 @@ bloody-f4lcon shadow --no-tui > result.json
 - TAB → Switch target
 - q → Exit
 - Backspace → Delete input
+- [ / ] → Cycle signals
+- s → Toggle signal detail popup
+- f → Cycle severity filter (High/Medium/Low/All)
+- t → Cycle tag filter (paste/code-leak/typosquat/All)
+- ↑/↓ → Scroll signal details
 
 Panels:
 - Header: version + platform count + hint strip
 - Active Targets: index, id, hits, status
 - Intel Feed: status, hits, platforms (green), restricted (yellow), rate-limited (magenta), failed (red), optional label
+- Signals: latest normalized signals with severity color and tags
 - Scan Engine: progress gauge or prompt
 - System Logs: rolling feed
 
@@ -73,6 +93,19 @@ enabled = true
 base_url = "https://github.com/{username}"
 # ... add more providers as needed
 ```
+Client scope: `config/client.demo.toml`
+```toml
+brand_terms = ["acme", "acme corp"]
+domains = ["acme.example"]
+watchlists = ["invoice", "password reset"]
+allowed_sources = ["typosquat", "ct-logs", "leak-keywords", "paste"]
+typosquat_locale = "us"
+typosquat_distance_weight = 10
+
+[rate_limits]
+paste_min_interval_ms = 800
+github_min_interval_ms = 1000
+```
 Flags override pieces:
 - `--config <path>` load alternate file
 - `--providers a,b,c` enable subset (case-insensitive)
@@ -81,7 +114,15 @@ Flags override pieces:
 - `--disk-cache-path <path>` override disk cache location
 - `--verbose` (repeat for debug/trace)
 - `--log-file <path>` change log destination
-- `--no-tui` headless JSON
+- `--no-tui` headless mode (signals)
+- `--scope <client.toml>` load client scope (required unless `--demo`)
+- `--format <jsonl|sarif|md>` output format for signals (headless)
+- `--output <path>` output file path for signals (headless)
+- `--db-path <path>` SQLite file for signal history/deltas
+- `--digest` write last-24h digest to `--digest-dir` (default data/digests)
+- `--digest-new-only` include only new signals in digest (default true; set false to include last 24h)
+- `--alert-webhook <url>` send immediate alerts (respect scope alert policy)
+- `--alerts-new-only` alert only on newly created signals (default true)
 - `--label <text>` label for initial target
 
 ## 🧪 Development
@@ -103,4 +144,3 @@ CI: GitHub Actions runs fmt + clippy + tests on push/PR; tag `v*` builds a relea
 
 ## 📸 Visual
 ![demo](docs/screenshot.png)
-

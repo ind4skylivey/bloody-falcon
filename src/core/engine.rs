@@ -65,6 +65,15 @@ impl Engine {
         })
     }
 
+    /// Construct a provider URL for a username if the provider is known.
+    pub fn provider_url(&self, provider_name: &str, username: &str) -> Option<String> {
+        self.config
+            .providers
+            .iter()
+            .find(|p| p.name.eq_ignore_ascii_case(provider_name))
+            .map(|p| p.base_url.replace("{username}", username))
+    }
+
     pub async fn scan_username(
         &self,
         username: &str,

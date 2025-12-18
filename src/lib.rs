@@ -1,6 +1,6 @@
-//! Library entry points for modular extensions.
-
-pub mod config;
+pub mod cli;
 pub mod core;
-pub mod modules;
+pub mod detectors;
+pub mod pipeline;
+pub mod sources;
 pub mod ui;

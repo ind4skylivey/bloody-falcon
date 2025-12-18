@@ -1,146 +1,103 @@
-<img width="3168" height="1344" alt="bloodyf4lcon" src="https://github.com/user-attachments/assets/2683095d-634b-4d3b-9c3c-1a321b9e48bf" />
+# BloodyFalcon
 
-🦅 BLOODY-F4LCON
+Defensive OSINT radar for authorized client monitoring. BloodyFalcon turns scoped, public signals into normalized findings with deterministic IDs, auditable evidence, and explainable decisions. It does not scan, exploit, or bypass protections.
 
-Terminal-first OSINT recon for usernames. Red/Black vibe, production-hardening: rate limiting, cache (RAM/opt-in disk), configurable providers, headless signals output.
+## What BloodyFalcon Is
+- A scope‑enforced, SOC‑grade pipeline for early warning signals (typosquats, impersonation indicators, new certs, mention spikes, exposure indicators).
+- Deterministic and auditable: stable IDs, evidence JSONL, and run manifests with hashes.
+- Designed to minimize false positives via suppression rules, corroboration requirements, and policy gates.
 
-## ✨ Features
-- Live provider checks (GitHub, Reddit, Steam, Twitter, PSNProfiles by default)
-- Rate limiting + backoff, cache with TTL (RAM by default; optional disk)
-- Configurable providers/user-agent/disk-cache via TOML or flags
-- TUI with active targets, intel feed, colored states, logs
-- Headless mode (`--no-tui`) for scripting; emits signals (JSONL/SARIF/Markdown) and stores history in SQLite
-- Signal sources: username hits, typosquat + RDAP age, keyboard/homoglyph variants, CT logs, GitHub code keyword leaks (optional `GITHUB_TOKEN`), paste search (optional `PASTE_TOKEN`)
-- Tracing to stdout + `data/falcon.log`
-- Client scope files (`client.toml`) define brand terms/domains; without scope tool runs in demo mode
+## What It Is Not
+- Not a vulnerability scanner or exploitation tool.
+- Not a scraping platform for personal data.
+- Not a bypass or intrusion framework.
 
-## 📦 Install
-**From repo**
+## Scope & Safety Guarantees
+- **Scope is mandatory**: refuses to run without `--scope` unless `--demo-safe`.
+- **Demo-safe**: only offline fixtures are allowed.
+- **Privacy-first**: redaction enforced unless explicitly allowed.
+- **Low noise**: generic-token suppression, negative keyword filtering, and temporal decay.
+
+## Determinism & Auditability
+- **Stable IDs**: derived from signal type, subject, evidence, and indicators.
+- **Evidence JSONL**: one record per line; deterministic ordering.
+- **Run manifest**: includes scope/config hashes, detector list, and evidence/output hashes.
+
+## Quick Start
 ```bash
-cargo install --path . --force
+# Scan using a scoped client file
+bloodyfalcon scan --scope clients/example.toml --format jsonl --output out/
+
+# Replay fixtures (offline, deterministic)
+bloodyfalcon replay --scope clients/example.toml --fixture fixtures/run-2025-01-02.jsonl --output out/
+
+# Generate a report from the latest run
+bloodyfalcon report --scope clients/example.toml --format markdown --output out/report.md
+
+# Trend intelligence (no network required)
+bloodyfalcon trend --scope clients/example.toml --window 7d --format markdown --output out/trend.md
+
+# Demo-safe mode (no scope required)
+bloodyfalcon scan --demo-safe --format jsonl --output out/
 ```
 
-**Direct from Git (SSH)**
+## Example Sanitized Output (JSONL)
+```json
+{"id":"sig_...","signal_type":"TyposquatDomain","subject":"examplecorp.test","source":"typosquat","evidence_ref":"ev_...","timestamp":"2025-01-02T00:00:00Z","indicators":["examplecorp-login.test"],"confidence":60,"severity":"Medium","rationale":"...","recommended_actions":["Review domain"],"dedupe_key":"TyposquatDomain:examplecorp.test:examplecorp-login.test","suppression_reason":"generic-token typosquat without corroboration","policy_flags":["suppressed:generic_token"]}
+```
+
+## Trend Examples
+JSON (trend report):
+```json
+{
+  "window_start": "2025-01-01T00:00:00Z",
+  "window_end": "2025-01-08T00:00:00Z",
+  "summary": [
+    "3 new TyposquatDomain signals in the last 7 days."
+  ],
+  "by_signal_type": [
+    {
+      "key": "TyposquatDomain",
+      "count": 3,
+      "prev_count": 0,
+      "delta": 3,
+      "first_seen": "2025-01-02T00:00:00Z",
+      "last_seen": "2025-01-04T00:00:00Z",
+      "first_seen_in_window": true
+    }
+  ]
+}
+```
+
+CSV (trend report):
+```csv
+dimension,key,count,prev_count,delta,first_seen,last_seen,first_seen_in_window
+signal_type,TyposquatDomain,3,0,3,2025-01-02T00:00:00Z,2025-01-04T00:00:00Z,true
+```
+
+## Alert Explainability Demo
+Use the alert fixture to see a full “Why this alert fired” section in the Markdown report:
 ```bash
-cargo install --git ssh://git@github.com/ind4skylivey/bloody-f4lcon.git --force
+bloodyfalcon replay --scope clients/example.toml --fixture fixtures/run-alert-2025-01-02.jsonl --output out_alert/
+bloodyfalcon report --scope clients/example.toml --format markdown --output out_alert/report.md
 ```
+The report will include rule traces, confidence adjustments, and corroborating signals for the alert.
 
-## 🚀 Quick Start
+## How SOCs Should Use It
+1. Run scheduled scans with a client scope file.
+2. Review alerts first; Investigate and Digest findings follow.
+3. Use trend reports to track drift and new activity.
+4. Preserve manifests and evidence for audit trails.
+
+## Security Philosophy
+BloodyFalcon prefers silence over false certainty. When it speaks, it is precise, explainable, and defensible.
+
+## Release Hygiene
+- **Real client scope files must never be committed.** Use `clients/example.toml` as a template.
+- Outputs, logs, and databases are ignored by default in `.gitignore`.
+
+## Development
 ```bash
-# Scan "shadow" with defaults
-bloody-f4lcon shadow
-
-# Limit to GitHub + Reddit
-bloody-f4lcon shadow --providers github,reddit
-
-# Disable RAM cache
-bloody-f4lcon shadow --no-cache
-
-# Enable disk cache (opt-in) at default path
-bloody-f4lcon shadow --disk-cache
-
-# Custom config
-bloody-f4lcon shadow --config config/bloodyf4lcon.toml
-
-# Headless signals (no TUI) with scope, JSONL output
-bloody-f4lcon shadow --no-tui --scope config/client.demo.toml --format jsonl --output data/signals.jsonl
-
-# Headless with digest + webhook alerts
-bloody-f4lcon shadow --no-tui --scope config/client.demo.toml --format jsonl --digest --alert-webhook https://hooks.slack.com/...
-
-# Headless with GitHub leak search (requires token)
-GITHUB_TOKEN=ghp_xxx bloody-f4lcon shadow --no-tui --scope config/client.demo.toml --format sarif
-
-# Headless including paste search (requires PASTE_TOKEN)
-PASTE_TOKEN=psb_xxx bloody-f4lcon shadow --no-tui --scope config/client.demo.toml --format jsonl
-
-# Paste + GitHub gist fallback (optional both tokens)
-GITHUB_TOKEN=ghp_xxx PASTE_TOKEN=psb_xxx bloody-f4lcon shadow --no-tui --scope config/client.demo.toml --format jsonl
+cargo fmt
+cargo test
 ```
-
-## 🎮 TUI Controls
-- ENTER → Scan current target (or add if input filled)
-- TAB → Switch target
-- q → Exit
-- Backspace → Delete input
-- [ / ] → Cycle signals
-- s → Toggle signal detail popup
-- f → Cycle severity filter (High/Medium/Low/All)
-- t → Cycle tag filter (paste/code-leak/typosquat/All)
-- ↑/↓ → Scroll signal details
-
-Panels:
-- Header: version + platform count + hint strip
-- Active Targets: index, id, hits, status
-- Intel Feed: status, hits, platforms (green), restricted (yellow), rate-limited (magenta), failed (red), optional label
-- Signals: latest normalized signals with severity color and tags
-- Scan Engine: progress gauge or prompt
-- System Logs: rolling feed
-
-## ⚙️ Configuration
-File: `config/bloodyf4lcon.toml`
-```toml
-timeout_ms = 5000
-max_concurrent_requests = 5
-cache_ttl_seconds = 600
-user_agent = "bloody-f4lcon/1.0 (+https://github.com/ind4skylivey/bloody-f4lcon)"
-disk_cache_enabled = false
-disk_cache_path = "data/cache.json"
-
-[[providers]]
-name = "github"
-enabled = true
-base_url = "https://github.com/{username}"
-# ... add more providers as needed
-```
-Client scope: `config/client.demo.toml`
-```toml
-brand_terms = ["acme", "acme corp"]
-domains = ["acme.example"]
-watchlists = ["invoice", "password reset"]
-allowed_sources = ["typosquat", "ct-logs", "leak-keywords", "paste"]
-typosquat_locale = "us"
-typosquat_distance_weight = 10
-
-[rate_limits]
-paste_min_interval_ms = 800
-github_min_interval_ms = 1000
-```
-Flags override pieces:
-- `--config <path>` load alternate file
-- `--providers a,b,c` enable subset (case-insensitive)
-- `--no-cache` disable in-memory cache
-- `--disk-cache` enable disk cache (path from config or `--disk-cache-path`)
-- `--disk-cache-path <path>` override disk cache location
-- `--verbose` (repeat for debug/trace)
-- `--log-file <path>` change log destination
-- `--no-tui` headless mode (signals)
-- `--scope <client.toml>` load client scope (required unless `--demo`)
-- `--format <jsonl|sarif|md>` output format for signals (headless)
-- `--output <path>` output file path for signals (headless)
-- `--db-path <path>` SQLite file for signal history/deltas
-- `--digest` write last-24h digest to `--digest-dir` (default data/digests)
-- `--digest-new-only` include only new signals in digest (default true; set false to include last 24h)
-- `--alert-webhook <url>` send immediate alerts (respect scope alert policy)
-- `--alerts-new-only` alert only on newly created signals (default true)
-- `--label <text>` label for initial target
-
-## 🧪 Development
-- Format: `cargo fmt`
-- Lint: `cargo clippy --all-targets -- -D warnings`
-- Test: `cargo test`
-
-CI: GitHub Actions runs fmt + clippy + tests on push/PR; tag `v*` builds a release binary (Linux x86_64 artifact).
-
-## 🗂️ Releases
-- Local release build: `cargo build --release` → `target/release/bloody-f4lcon`
-- CI tagged release: push tag `vX.Y.Z` → workflow builds and uploads Linux binary artifact.
-
-## 🔒 Privacy & Data Handling
-- Data minimization: cache stores only username, timestamp, provider states (hit/restricted/rate-limited/failed). No raw HTTP bodies stored or logged.
-- Disk cache is **opt-in** (`--disk-cache` or config `disk_cache_enabled = true`).
-- Clear cache: `rm -f data/cache.json data/falcon.log` (and any custom path).
-- Respect platform ToS and legal boundaries; OSINT only where authorized.
-
-## 📸 Visual
-![demo](docs/screenshot.png)

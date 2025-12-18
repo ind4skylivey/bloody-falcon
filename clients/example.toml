@@ -1,0 +1,61 @@
+# Example client scope (fictional placeholders only).
+
+# Brand terms used for matching public signals.
+brand_terms = ["examplecorp", "example cloud"]
+
+# Official domains owned by the client.
+domains = ["examplecorp.test", "example-cloud.test"]
+
+# Public product names (for correlation and watchlists).
+products = ["ExampleVault"]
+
+# Official social handles (public only).
+official_handles = ["@examplecorp", "@examplecorp_support"]
+
+# Sources that are allowed for this client scope.
+allowed_sources = ["fixture", "offline"]
+
+# Detectors that are allowed for this client scope.
+allowed_detectors = ["typosquat"]
+
+# Watchlist keywords tied to fraud/abuse themes (scope-approved).
+watch_keywords = ["invoice", "reset password", "wire", "stealer"]
+
+# Negative keywords to suppress noise.
+negative_keywords = ["career", "jobs", "press release"]
+
+[privacy]
+# Store raw evidence content (false means redact).
+store_raw = false
+# Patterns to redact when store_raw is false.
+redact_patterns = ["AKIA[0-9A-Z]{16}", "-----BEGIN PRIVATE KEY-----"]
+# Retention window (days) for evidence storage.
+max_evidence_retention_days = 30
+
+[policy]
+# Minimum confidence to alert.
+min_confidence_alert = 80
+# Minimum severity to alert.
+min_severity_alert = "high"
+# Digest schedule for non-immediate findings.
+digest_frequency = "daily"
+
+[policy.typosquat]
+# Generic tokens that should not escalate without corroboration.
+generic_tokens = ["login", "secure", "support", "billing", "account", "verify"]
+# Domains older than this are treated as lower priority noise.
+old_domain_days = 180
+
+[rate_limits]
+# Minimum interval between GitHub queries (ms).
+github_min_interval_ms = 1000
+# Minimum interval between paste queries (ms).
+paste_min_interval_ms = 800
+# Minimum interval between CT log queries (ms).
+ct_min_interval_ms = 500
+
+[typosquat]
+# Keyboard locale for typosquat generation.
+locale = "us"
+# Weight for fuzzy distance scoring.
+distance_weight = 10

@@ -162,7 +162,7 @@ fn keyboard_map(locale: Option<&str>) -> Vec<(char, Vec<char>)> {
         ('m', vec!['n', 'j']),
     ];
     match locale.unwrap_or("us") {
-        "es" => us.into_iter().map(|(k, v)| (k, v)).collect(),
+        "es" => us,
         "fr" => us
             .into_iter()
             .map(|(k, mut v)| {

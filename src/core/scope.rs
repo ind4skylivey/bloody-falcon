@@ -42,18 +42,13 @@ pub struct Threshold {
     pub confidence: u8,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Default)]
 #[serde(rename_all = "lowercase")]
 pub enum DigestFrequency {
+    #[default]
     Daily,
     Weekly,
     Off,
-}
-
-impl Default for DigestFrequency {
-    fn default() -> Self {
-        DigestFrequency::Daily
-    }
 }
 
 pub fn load_scope(path: &Path) -> Result<ClientScope, FalconError> {

@@ -41,11 +41,12 @@ pub async fn run_tui(
     let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;
 
-    let mut scan_task: Option<(
+    type ScanTask = (
         usize,
         String,
         JoinHandle<Result<crate::core::engine::ReconResult, FalconError>>,
-    )> = None;
+    );
+    let mut scan_task: Option<ScanTask> = None;
 
     loop {
         terminal.draw(|f| draw_ui(f, &app))?;

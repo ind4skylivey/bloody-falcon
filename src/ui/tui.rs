@@ -58,6 +58,7 @@ pub fn run_tui(signals: Vec<Signal>, findings: Vec<Finding>) -> Result<()> {
 
         if last_tick.elapsed() >= tick_rate {
             last_tick = Instant::now();
+            app.tick = app.tick.wrapping_add(1);
         }
     }
 
@@ -95,6 +96,7 @@ struct App {
     show_detail: bool,
     show_help: bool,
     investigating: HashSet<String>,
+    tick: usize,
 }
 
 #[derive(Serialize)]
@@ -151,6 +153,7 @@ impl App {
             show_detail: false,
             show_help: false,
             investigating: HashSet::new(),
+            tick: 0,
         };
         app.refresh_filtered();
         app
@@ -488,6 +491,9 @@ fn draw(f: &mut Frame<'_>, app: &App) {
 }
 
 fn draw_header(f: &mut Frame<'_>, area: Rect, app: &App) {
+    let spinner_frames = ["◐", "◓", "◑", "◒"];
+    let spin = spinner_frames[app.tick % spinner_frames.len()];
+
     let filters = format!(
         "sev: {} | disp: {} | tag: {}",
         app.filter_severity
@@ -503,13 +509,27 @@ fn draw_header(f: &mut Frame<'_>, area: Rect, app: &App) {
             .cloned()
             .unwrap_or_else(|| "any".to_string())
     );
-    let title = Paragraph::new(format!(
-        "🦅 BLOODY-FALCON v1.0 — READ-ONLY TUI | {}",
-        filters
-    ))
-    .style(Style::default().fg(Color::Red).add_modifier(Modifier::BOLD))
-    .block(Block::default().borders(Borders::ALL).title("HEADER"));
-    f.render_widget(title, area);
+    let badges = vec![
+        Span::styled("[DEFENSIVE]", Style::default().fg(Color::Green)),
+        Span::raw(" "),
+        Span::styled("[READ-ONLY]", Style::default().fg(Color::Yellow)),
+        Span::raw(" "),
+        Span::styled("[SCOPE-LOCKED]", Style::default().fg(Color::Magenta)),
+    ];
+    let title = Line::from(vec![
+        Span::styled(
+            format!("{} 🦅 BLOODY-FALCON v1.0 — READ-ONLY TUI ", spin),
+            Style::default()
+                .fg(Color::Red)
+                .add_modifier(Modifier::BOLD | Modifier::UNDERLINED),
+        ),
+        Span::raw(" "),
+    ]);
+
+    let block = Block::default().borders(Borders::ALL).title("HEADER");
+    let lines = vec![title, Line::from(badges), Line::from(filters)];
+    let widget = Paragraph::new(lines);
+    f.render_widget(widget.block(block), area);
 }
 
 fn draw_body(f: &mut Frame<'_>, area: Rect, app: &App) {
@@ -532,6 +552,11 @@ fn draw_signal_list(f: &mut Frame<'_>, area: Rect, app: &App) {
             let disp = app.disposition_for_signal(s);
             let sev_color = severity_color(&s.severity);
             let disp_color = disposition_color(&disp);
+            let pulse = if app.tick % 8 < 4 {
+                Style::default().add_modifier(Modifier::BOLD)
+            } else {
+                Style::default()
+            };
             let tags = if s.tags.is_empty() {
                 "".to_string()
             } else {
@@ -549,7 +574,10 @@ fn draw_signal_list(f: &mut Frame<'_>, area: Rect, app: &App) {
                 Span::raw(" "),
                 Span::raw(s.subject.clone()),
                 Span::raw(" "),
-                Span::styled(format!("{:?}", s.severity), Style::default().fg(sev_color)),
+                Span::styled(
+                    format!("{:?}", s.severity),
+                    Style::default().fg(sev_color).patch(pulse),
+                ),
                 Span::raw(" "),
                 Span::styled(format!("{:?}", disp), Style::default().fg(disp_color)),
                 Span::raw(tags),
@@ -668,6 +696,12 @@ fn draw_detail_modal(f: &mut Frame<'_>, app: &App) {
     let mut lines = Vec::new();
     if let Some(sig) = app.current_signal() {
         lines.push(Line::from(Span::styled(
+            format!("{} DETAIL", spinner(app.tick)),
+            Style::default()
+                .fg(Color::LightCyan)
+                .add_modifier(Modifier::BOLD),
+        )));
+        lines.push(Line::from(Span::styled(
             "Evidence & Explainability",
             Style::default()
                 .fg(Color::Cyan)
@@ -713,7 +747,7 @@ fn draw_help_modal(f: &mut Frame<'_>) {
     let area = centered_rect(70, 60, f.size());
     let content = vec![
         Line::from(Span::styled(
-            "Keyboard Shortcuts",
+            format!("{} Keyboard Shortcuts", spinner_title()),
             Style::default()
                 .fg(Color::Cyan)
                 .add_modifier(Modifier::BOLD),
@@ -781,4 +815,13 @@ fn centered_rect(percent_x: u16, percent_y: u16, r: Rect) -> Rect {
         .split(popup_layout[1]);
 
     vertical[1]
+}
+
+fn spinner(tick: usize) -> &'static str {
+    const FRAMES: [&str; 4] = ["◐", "◓", "◑", "◒"];
+    FRAMES[tick % FRAMES.len()]
+}
+
+fn spinner_title() -> &'static str {
+    "◈"
 }

@@ -138,6 +138,21 @@ pub enum Command {
         #[arg(long)]
         output: Option<PathBuf>,
     },
+    /// Read-only TUI to browse latest stored signals/findings
+    Tui {
+        /// Scope file path (required unless --demo-safe)
+        #[arg(long)]
+        scope: Option<PathBuf>,
+        /// Client name mapped to clients/<name>.toml
+        #[arg(long)]
+        client: Option<String>,
+        /// Allow running without scope in safe mode
+        #[arg(long)]
+        demo_safe: bool,
+        /// Disable network access (unused for TUI; parity with other cmds)
+        #[arg(long)]
+        no_network: bool,
+    },
 }
 
 #[derive(ValueEnum, Clone, Debug)]

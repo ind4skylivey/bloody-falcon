@@ -33,6 +33,7 @@ pub enum CommandName {
     Replay,
     Report,
     Trend,
+    Tui,
 }
 
 pub fn resolve_config(cli: &Cli) -> Result<RunConfig> {
@@ -98,12 +99,27 @@ pub fn resolve_config(cli: &Cli) -> Result<RunConfig> {
                 output.clone(),
                 None,
             ),
+            Command::Tui {
+                scope,
+                client,
+                demo_safe,
+                no_network,
+            } => (
+                CommandName::Tui,
+                resolve_scope_path_overrides(scope.clone(), client.clone())?,
+                *demo_safe,
+                *no_network,
+                None,
+                None,
+                None,
+            ),
         };
 
     let format = match (&format_arg, command) {
         (Some(fmt), _) => fmt.clone().into(),
         (None, CommandName::Report) => OutputFormat::Markdown,
         (None, CommandName::Trend) => OutputFormat::Markdown,
+        (None, CommandName::Tui) => OutputFormat::Markdown,
         (None, _) => OutputFormat::Jsonl,
     };
 

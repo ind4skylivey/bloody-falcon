@@ -20,6 +20,7 @@ use crate::pipeline::reporter::{
     write_evidence_jsonl, write_manifest, write_signals_output, ReportPaths,
 };
 use crate::pipeline::scorer::score_signals;
+use crate::ui::tui::run_tui;
 
 pub fn run(cli: Cli) -> Result<()> {
     let cfg = resolve_config(&cli)?;
@@ -35,6 +36,7 @@ pub fn run(cli: Cli) -> Result<()> {
         Command::Replay { fixture, .. } => run_replay(&cfg, &scope, &fixture),
         Command::Report { .. } => run_report(&cfg, &scope),
         Command::Trend { .. } => run_trend(&cfg, &scope),
+        Command::Tui { .. } => run_tui_cmd(&cfg, &scope),
     }
 }
 
@@ -192,6 +194,23 @@ fn run_trend(cfg: &RunConfig, _scope: &Scope) -> Result<()> {
             crate::pipeline::reporter::write_trend_json(&report, &output_path)?;
         }
     }
+    Ok(())
+}
+
+fn run_tui_cmd(cfg: &RunConfig, _scope: &Scope) -> Result<()> {
+    let db_path = Store::default_path();
+    let store = Store::new(&db_path)?;
+    let mut signals = store.latest_signals()?;
+    let mut findings = store.latest_findings()?;
+    if signals.is_empty() {
+        signals = load_signals_fallback(&cfg.output)?;
+    }
+    if signals.is_empty() {
+        return Err(anyhow!("no stored signals available for TUI"));
+    }
+    findings.sort_by(|a, b| a.id.cmp(&b.id));
+    signals.sort_by(|a, b| a.id.cmp(&b.id));
+    run_tui(signals, findings)?;
     Ok(())
 }
 

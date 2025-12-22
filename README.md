@@ -1,114 +1,108 @@
 <img width="3168" height="1344" alt="bloodyf4lcon" src="https://github.com/user-attachments/assets/2683095d-634b-4d3b-9c3c-1a321b9e48bf" />
 
-# BloodyFalcon
+[![Rust](https://img.shields.io/badge/Rust-1.75%2B-black?logo=rust&label=toolchain)](#) [![CLI](https://img.shields.io/badge/Mode-defensive%20OSINT-red?logo=target)](#) [![Outputs](https://img.shields.io/badge/output-jsonl%20%7C%20md%20%7C%20sarif-blue)](#) [![Storage](https://img.shields.io/badge/store-SQLite%20%7C%20JSONL-8A2BE2)](#) [![License](https://img.shields.io/badge/license-TBD-lightgrey)](#)
 
-Defensive OSINT radar for authorized client monitoring. BloodyFalcon turns scoped, public signals into normalized findings with deterministic IDs, auditable evidence, and explainable decisions. It does not scan, exploit, or bypass protections.
+─── ▓▓▓ ░░░ ───
 
-## What BloodyFalcon Is
-- A scope‑enforced, SOC‑grade pipeline for early warning signals (typosquats, impersonation indicators, new certs, mention spikes, exposure indicators).
-- Deterministic and auditable: stable IDs, evidence JSONL, and run manifests with hashes.
-- Designed to minimize false positives via suppression rules, corroboration requirements, and policy gates.
+## ⚔ OPERATION OVERVIEW
+BloodyFalcon is a defensive OSINT radar. It ingests scoped, public signals, normalizes them into deterministic IDs, and emits auditable evidence plus explainable findings for SOC workflows. No exploitation, no bypassing controls—only disciplined reconnaissance inside explicitly authorized scope files.
 
-## What It Is Not
-- Not a vulnerability scanner or exploitation tool.
-- Not a scraping platform for personal data.
-- Not a bypass or intrusion framework.
+```text
+</> BLOODY-F4LCON // live feed
+[#######-------] signal normalization    68%
+[██████░░░░░░░] policy gates & decay     54%
+channel: scope=clients/example.toml | mode=demo-safe | output=out/
+telemetry: evidence=hashes | manifest=stable | TUI=read-only
+```
 
-## Scope & Safety Guarantees
-- **Scope is mandatory**: refuses to run without `--scope` unless `--demo-safe`.
-- **Demo-safe**: only offline fixtures are allowed.
-- **Privacy-first**: redaction enforced unless explicitly allowed.
-- **Low noise**: generic-token suppression, negative keyword filtering, and temporal decay.
+## 🚀 QUICKSTART (CHECKLIST)
+- [ ] Install Rust toolchain (`rustup` ≥ 1.75).
+- [ ] Copy `clients/example.toml` → your scoped file (keep it private).
+- [ ] Run `bloodyfalcon scan --scope clients/example.toml --format jsonl --output out/`.
+- [ ] Generate a human report: `bloodyfalcon report --output out/report.md`.
+- [ ] Review in the read-only TUI: `bloodyfalcon tui --output out/` (`q` to exit).
 
-## Determinism & Auditability
-- **Stable IDs**: derived from signal type, subject, evidence, and indicators.
-- **Evidence JSONL**: one record per line; deterministic ordering.
-- **Run manifest**: includes scope/config hashes, detector list, and evidence/output hashes.
+## 🛰 FEATURES
+- **Deterministic pipeline**: stable signal IDs, evidence refs, dedupe keys, and run manifests hashed with scope/config.
+- **Policy & noise discipline**: negative-keyword suppression, typosquat generic-token downgrades, temporal decay, and digest preferences tuned by scope.
+- **Evidence hygiene**: redaction toggle (`privacy.store_raw=false`) removes URLs/notes from `evidence.jsonl`; retention enforced on SQLite store.
+- **Multi-format outputs**: JSON/JSONL/Markdown/SARIF/CSV plus manifests and trend reports.
+- **Storage + replay**: runs can persist to `data/falcon.db`; `replay` fixtures guarantee identical outputs for the same inputs.
+- **Read-only TUI**: filter by severity/disposition/tag, inspect rationale, and export the current view without mutating data.
+- **Current detector**: offline typosquat generator (domain permutations with scoring and suppression). Additional CT/paste/leak collectors live in `src/modules/detections.rs` and are queued for hardening before joining the default run.
 
-## Quick Start
+## 🛠 INSTALL / USAGE
 ```bash
-# Scan using a scoped client file
+# Build
+cargo build --release
+
+# Scan with scope (refuses to run without scope unless --demo-safe)
 bloodyfalcon scan --scope clients/example.toml --format jsonl --output out/
 
-# Replay fixtures (offline, deterministic)
-bloodyfalcon replay --scope clients/example.toml --fixture fixtures/run-2025-01-02.jsonl --output out/
-
-# Generate a report from the latest run
-bloodyfalcon report --scope clients/example.toml --format markdown --output out/report.md
-
-# Trend intelligence (no network required)
-bloodyfalcon trend --scope clients/example.toml --window 7d --format markdown --output out/trend.md
-
-# Demo-safe mode (no scope required)
-bloodyfalcon scan --demo-safe --format jsonl --output out/
-```
-
-## Example Sanitized Output (JSONL)
-```json
-{"id":"sig_...","signal_type":"TyposquatDomain","subject":"example.com","source":"typosquat","evidence_ref":"ev_...","timestamp":"2025-01-02T00:00:00Z","indicators":["example.org"],"confidence":60,"severity":"Medium","rationale":"...","recommended_actions":["Review domain"],"dedupe_key":"TyposquatDomain:example.com:example.org","suppression_reason":"generic-token typosquat without corroboration","policy_flags":["suppressed:generic_token"]}
-```
-
-## Trend Examples
-JSON (trend report):
-```json
-{
-  "window_start": "2025-01-01T00:00:00Z",
-  "window_end": "2025-01-08T00:00:00Z",
-  "summary": [
-    "3 new TyposquatDomain signals in the last 7 days."
-  ],
-  "by_signal_type": [
-    {
-      "key": "TyposquatDomain",
-      "count": 3,
-      "prev_count": 0,
-      "delta": 3,
-      "first_seen": "2025-01-02T00:00:00Z",
-      "last_seen": "2025-01-04T00:00:00Z",
-      "first_seen_in_window": true
-    }
-  ]
-}
-```
-
-CSV (trend report):
-```csv
-dimension,key,count,prev_count,delta,first_seen,last_seen,first_seen_in_window
-signal_type,TyposquatDomain,3,0,3,2025-01-02T00:00:00Z,2025-01-04T00:00:00Z,true
-```
-
-## Screenshots (TUI read-only viewer)
-- Signal list with filters (severity/disposition/tag) and status line:
-  
-  ![TUI Signals](docs/screenshots/tui-signals.png)
-
-- Detail modal with explainability, suppression reasons, and linked findings:
-
-  ![TUI Detail](docs/screenshots/tui-detail.png)
-
-## Alert Explainability Demo
-Use the alert fixture to see a full “Why this alert fired” section in the Markdown report:
-```bash
+# Fixture replay (deterministic, offline)
 bloodyfalcon replay --scope clients/example.toml --fixture fixtures/run-alert-2025-01-02.jsonl --output out_alert/
-bloodyfalcon report --scope clients/example.toml --format markdown --output out_alert/report.md
+
+# Report & trend from latest stored run
+bloodyfalcon report --output out/report.md
+bloodyfalcon trend --window 7d --output out/trend.md
+
+# Read-only terminal viewer
+bloodyfalcon tui --output out/
+
+# Demo-safe sandbox (no scope, offline fixtures only)
+bloodyfalcon scan --demo-safe --format jsonl --output out_demo/
 ```
-The report will include rule traces, confidence adjustments, and corroborating signals for the alert.
 
-## How SOCs Should Use It
-1. Run scheduled scans with a client scope file.
-2. Review alerts first; Investigate and Digest findings follow.
-3. Use trend reports to track drift and new activity.
-4. Preserve manifests and evidence for audit trails.
+### Operating Modes
+- `--scope` / `--client`: loads a TOML scope; enforces allowed sources/detectors.
+- `--demo-safe`: bypasses scope requirement; forces offline-only detectors.
+- `--no-network`: forbids detectors that need the network (current detector is offline-safe).
+- `--detectors`, `--sources`: extra allowlists applied on top of scope.
 
-## Security Philosophy
-BloodyFalcon prefers silence over false certainty. When it speaks, it is precise, explainable, and defensible.
+## ⚙ CONFIGURATION
+- **Scope files** (`clients/*.toml`): brand terms, domains, official handles, `allowed_sources`, `allowed_detectors`, watch/negative keywords, privacy rules, policy thresholds, rate limits, typosquat locale/distance weight.
+- **App config** (`config/bloodyf4lcon.toml`): provider list for username presence checks, timeouts, concurrency, UA string, optional disk cache path.
+- **Privacy**: when `store_raw=false`, evidence URLs/notes are stripped and indicators are redacted via regex patterns.
+- **Retention**: SQLite runs live in `data/falcon.db`; `max_evidence_retention_days` purges old runs automatically.
 
-## Release Hygiene
-- **Real client scope files must never be committed.** Use `clients/example.toml` as a template.
-- Outputs, logs, and databases are ignored by default in `.gitignore`.
-
-## Development
+## 🎯 EXAMPLES
 ```bash
-cargo fmt
-cargo test
+# Generate typosquat candidates for scoped domains
+bloodyfalcon scan --scope clients/example.toml --format jsonl --output out/
+cat out/signals.jsonl | head
+
+# Replay an alert fixture to see explainability in the report
+bloodyfalcon replay --scope clients/example.toml --fixture fixtures/run-alert-2025-01-02.jsonl --output out_alert/
+bloodyfalcon report --output out_alert/report.md
+
+# Trend view (7-day window)
+bloodyfalcon trend --window 7d --output out/trend.md
+
+# Inspect stored signals safely
+bloodyfalcon tui --output out/
 ```
+
+## 🧭 ARCHITECTURE SNAPSHOT
+- Collector → Normalizer → Scorer → Correlator → Escalator → Reporter.
+- Outputs: `evidence.jsonl`, `signals.{json|jsonl|md|sarif|csv}`, `manifest.json`, optional SQLite history.
+- Manifests embed scope hash, config hash, detector list, evidence/output hashes, and time window for reproducibility.
+
+## 📡 PLANNED OPERATIONS
+- Wire CT log, paste intel, and GitHub leak collectors (already prototyped) into the default pipeline with safe rate limits.
+- Expose the username recon engine (config-driven providers) as a hardened CLI command.
+- Correlation rules beyond typosquat (multi-signal corroboration, feed matches, mention spikes).
+- CI hardening: release artifacts plus signed checksums.
+
+## 🤝 CONTRIBUTING
+- Rust style: `cargo fmt && cargo test` before sending patches.
+- Do not commit real client scopes, secrets, outputs, or databases. Use fixtures and `clients/example.toml` instead.
+- Keep docs and code in English; favor deterministic behavior and privacy-safe defaults.
+- If you add detectors/sources, ensure they respect `--no-network`, scope allowlists, and redaction paths.
+
+## 🔒 SECURITY & ETHICS
+- For authorized monitoring only; no exploitation, no intrusive collection.
+- Scope-first: the binary refuses to run without a scope unless `--demo-safe`.
+- Privacy-first: redaction + retention controls; prefer silence over noisy or unjustified alerts.
+- Preserve manifests/evidence for audit; sanitize when sharing.
+
+─── ▓▓▓ ░░░ ───

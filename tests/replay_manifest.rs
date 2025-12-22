@@ -9,6 +9,7 @@ use bloody_falcon::core::types::OutputFormat;
 #[test]
 fn replay_manifest_is_deterministic() {
     std::env::set_var("BF_FIXED_TIME", "2025-01-02T00:00:00Z");
+    std::env::set_var("GIT_HASH", "test-hash");
 
     let scope = load_scope(Path::new("clients/example.toml")).unwrap();
     let temp_dir = std::env::temp_dir().join("bf_replay_test");
@@ -37,6 +38,6 @@ fn replay_manifest_is_deterministic() {
 
     assert_eq!(
         hash,
-        "20ac87364eea5b216d5b1a43395bbb635262fdf672b24d74636f00c4ee97d811"
+        "47127489f8808b8987125f4cdedb09410c34defe2983db04c9dec2d5e680c681"
     );
 }

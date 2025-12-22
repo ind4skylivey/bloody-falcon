@@ -37,6 +37,7 @@ impl Detector for TyposquatDetector {
                         "Consider takedown if abusive".to_string(),
                     ],
                     dedupe_key: String::new(),
+                    tags: vec!["typosquat".to_string()],
                     suppression_reason: None,
                     policy_flags: vec![],
                 };

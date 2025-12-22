@@ -122,7 +122,7 @@ pub fn run_replay_with_config(cfg: &RunConfig, scope: &Scope, fixture: &Path) ->
     let findings = correlate_signals(&signals);
     let findings = escalate_findings(findings, scope);
 
-    let report_paths = write_outputs(cfg, scope, &signals, &mut evidence, &vec!["replay".into()])?;
+    let report_paths = write_outputs(cfg, scope, &signals, &mut evidence, &["replay".into()])?;
     let manifest = persist_run(&report_paths, &signals, &findings, scope, cfg, &window)?;
     Ok(manifest)
 }
@@ -240,7 +240,7 @@ fn write_outputs(
     cfg: &RunConfig,
     scope: &Scope,
     signals: &[Signal],
-    evidence: &mut Vec<crate::core::types::Evidence>,
+    evidence: &mut [crate::core::types::Evidence],
     detectors: &[String],
 ) -> Result<ReportPaths> {
     let output_dir = if cfg.output.is_dir() || cfg.output.extension().is_none() {

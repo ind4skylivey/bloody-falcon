@@ -16,11 +16,7 @@ pub struct ReportPaths {
     pub detectors: Vec<String>,
 }
 
-pub fn write_evidence_jsonl(
-    evidence: &mut Vec<Evidence>,
-    path: &Path,
-    scope: &Scope,
-) -> Result<()> {
+pub fn write_evidence_jsonl(evidence: &mut [Evidence], path: &Path, scope: &Scope) -> Result<()> {
     evidence.sort_by(|a, b| a.id.cmp(&b.id));
     let mut lines = String::new();
     for ev in evidence.iter() {

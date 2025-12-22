@@ -233,7 +233,7 @@ impl Store {
             window_start: start,
             window_end: end,
             by_signal_type: by_type,
-            by_subject: by_subject,
+            by_subject,
             by_dedupe_key: by_dedupe,
             summary,
         })

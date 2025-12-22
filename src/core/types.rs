@@ -26,6 +26,8 @@ pub struct Signal {
     pub recommended_actions: Vec<String>,
     pub dedupe_key: String,
     #[serde(default)]
+    pub tags: Vec<String>,
+    #[serde(default)]
     pub suppression_reason: Option<String>,
     #[serde(default)]
     pub policy_flags: Vec<String>,
@@ -53,7 +55,6 @@ pub enum Severity {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct Indicator(pub String);
 
-#[allow(dead_code)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[allow(dead_code)]
 pub struct Score {
@@ -80,23 +81,17 @@ pub struct Finding {
     pub suppression_reason: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
 pub enum FindingDisposition {
     Alert,
     Investigate,
+    #[default]
     Digest,
     Suppressed,
 }
 
-impl Default for FindingDisposition {
-    fn default() -> Self {
-        FindingDisposition::Digest
-    }
-}
-
 #[allow(dead_code)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[allow(dead_code)]
 pub struct Policy {
     pub min_confidence_alert: u8,
     pub min_severity_alert: Severity,

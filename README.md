@@ -1,3 +1,5 @@
+<img width="3168" height="1344" alt="bloodyf4lcon" src="https://github.com/user-attachments/assets/2683095d-634b-4d3b-9c3c-1a321b9e48bf" />
+
 # BloodyFalcon
 
 Defensive OSINT radar for authorized client monitoring. BloodyFalcon turns scoped, public signals into normalized findings with deterministic IDs, auditable evidence, and explainable decisions. It does not scan, exploit, or bypass protections.
@@ -74,6 +76,15 @@ CSV (trend report):
 dimension,key,count,prev_count,delta,first_seen,last_seen,first_seen_in_window
 signal_type,TyposquatDomain,3,0,3,2025-01-02T00:00:00Z,2025-01-04T00:00:00Z,true
 ```
+
+## Screenshots (TUI read-only viewer)
+- Signal list with filters (severity/disposition/tag) and status line:
+  
+  ![TUI Signals](docs/screenshots/tui-signals.png)
+
+- Detail modal with explainability, suppression reasons, and linked findings:
+
+  ![TUI Detail](docs/screenshots/tui-detail.png)
 
 ## Alert Explainability Demo
 Use the alert fixture to see a full “Why this alert fired” section in the Markdown report:

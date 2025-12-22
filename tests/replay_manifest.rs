@@ -36,6 +36,9 @@ fn replay_manifest_is_deterministic() {
     let manifest_json = serde_json::to_string(&manifest).unwrap();
     let hash = sha256_hex(manifest_json.as_bytes());
 
+    println!("Manifest JSON: {}", manifest_json);
+    println!("Hash: {}", hash);
+
     assert_eq!(
         hash,
         "47127489f8808b8987125f4cdedb09410c34defe2983db04c9dec2d5e680c681"

@@ -114,7 +114,7 @@ impl App {
     }
 }
 
-fn draw(f: &mut Frame<CrosstermBackend<io::Stdout>>, app: &App) {
+fn draw(f: &mut Frame<'_>, app: &App) {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints(
@@ -132,14 +132,14 @@ fn draw(f: &mut Frame<CrosstermBackend<io::Stdout>>, app: &App) {
     draw_footer(f, chunks[2]);
 }
 
-fn draw_header(f: &mut Frame<CrosstermBackend<io::Stdout>>, area: Rect) {
+fn draw_header(f: &mut Frame<'_>, area: Rect) {
     let title = Paragraph::new("🦅 BLOODY-FALCON v1.0 — READ-ONLY TUI (q to quit)")
         .style(Style::default().fg(Color::Red).add_modifier(Modifier::BOLD))
         .block(Block::default().borders(Borders::ALL).title("HEADER"));
     f.render_widget(title, area);
 }
 
-fn draw_body(f: &mut Frame<CrosstermBackend<io::Stdout>>, area: Rect, app: &App) {
+fn draw_body(f: &mut Frame<'_>, area: Rect, app: &App) {
     let columns = Layout::default()
         .direction(Direction::Horizontal)
         .constraints([Constraint::Percentage(45), Constraint::Percentage(55)].as_ref())
@@ -149,7 +149,7 @@ fn draw_body(f: &mut Frame<CrosstermBackend<io::Stdout>>, area: Rect, app: &App)
     draw_signal_detail(f, columns[1], app);
 }
 
-fn draw_signal_list(f: &mut Frame<CrosstermBackend<io::Stdout>>, area: Rect, app: &App) {
+fn draw_signal_list(f: &mut Frame<'_>, area: Rect, app: &App) {
     let items: Vec<ListItem> = app
         .signals
         .iter()
@@ -187,7 +187,7 @@ fn draw_signal_list(f: &mut Frame<CrosstermBackend<io::Stdout>>, area: Rect, app
     f.render_stateful_widget(list, area, &mut state);
 }
 
-fn draw_signal_detail(f: &mut Frame<CrosstermBackend<io::Stdout>>, area: Rect, app: &App) {
+fn draw_signal_detail(f: &mut Frame<'_>, area: Rect, app: &App) {
     let sig_opt = app.signals.get(app.selected);
     let content = if let Some(sig) = sig_opt {
         let mut lines = Vec::new();
@@ -229,7 +229,7 @@ fn draw_signal_detail(f: &mut Frame<CrosstermBackend<io::Stdout>>, area: Rect, a
     f.render_widget(content.block(block), area);
 }
 
-fn draw_footer(f: &mut Frame<CrosstermBackend<io::Stdout>>, area: Rect) {
+fn draw_footer(f: &mut Frame<'_>, area: Rect) {
     let line = Line::from(vec![
         Span::styled("NAV: ↑/↓ ", Style::default().fg(Color::Cyan)),
         Span::raw(" | "),

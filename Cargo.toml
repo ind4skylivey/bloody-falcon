@@ -1,6 +1,6 @@
 [package]
 name = "bloody-falcon"
-version = "0.2.0"
+version = "1.0.0"
 edition = "2021"
 description = "🦅 OSINT Framework - Bloody Monday Terminal Aesthetics"
 keywords = ["osint", "recon", "cybersecurity", "rust", "tui"]

@@ -510,11 +510,26 @@ fn draw_header(f: &mut Frame<'_>, area: Rect, app: &App) {
             .unwrap_or_else(|| "any".to_string())
     );
     let badges = vec![
-        Span::styled("[DEFENSIVE]", Style::default().fg(Color::Green)),
+        Span::styled(
+            "[DEFENSIVE]",
+            Style::default()
+                .fg(Color::Green)
+                .add_modifier(Modifier::BOLD),
+        ),
         Span::raw(" "),
-        Span::styled("[READ-ONLY]", Style::default().fg(Color::Yellow)),
+        Span::styled(
+            "[READ-ONLY]",
+            Style::default()
+                .fg(Color::Yellow)
+                .add_modifier(Modifier::BOLD),
+        ),
         Span::raw(" "),
-        Span::styled("[SCOPE-LOCKED]", Style::default().fg(Color::Magenta)),
+        Span::styled(
+            "[SCOPE-LOCKED]",
+            Style::default()
+                .fg(Color::Magenta)
+                .add_modifier(Modifier::BOLD),
+        ),
     ];
     let title = Line::from(vec![
         Span::styled(
@@ -560,8 +575,9 @@ fn draw_signal_list(f: &mut Frame<'_>, area: Rect, app: &App) {
             let tags = if s.tags.is_empty() {
                 "".to_string()
             } else {
-                format!(" [{}]", s.tags.join(","))
+                format!(" [{}]", colorize_tags(&s.tags, app.tick))
             };
+            let bar = confidence_bar(s.confidence);
             let line = Line::from(vec![
                 Span::styled(
                     format!("{:>3} ", visible_idx + 1),
@@ -569,7 +585,7 @@ fn draw_signal_list(f: &mut Frame<'_>, area: Rect, app: &App) {
                 ),
                 Span::styled(
                     format!("{:?}", s.signal_type),
-                    Style::default().fg(Color::Cyan),
+                    Style::default().fg(accent_color(app.tick)),
                 ),
                 Span::raw(" "),
                 Span::raw(s.subject.clone()),
@@ -580,9 +596,11 @@ fn draw_signal_list(f: &mut Frame<'_>, area: Rect, app: &App) {
                 ),
                 Span::raw(" "),
                 Span::styled(format!("{:?}", disp), Style::default().fg(disp_color)),
+                Span::raw(" "),
+                Span::styled(bar, Style::default().fg(Color::LightGreen)),
                 Span::raw(tags),
             ]);
-            ListItem::new(line)
+            ListItem::new(line).style(row_shade(visible_idx))
         })
         .collect();
 
@@ -824,4 +842,47 @@ fn spinner(tick: usize) -> &'static str {
 
 fn spinner_title() -> &'static str {
     "◈"
+}
+
+fn accent_color(tick: usize) -> Color {
+    match tick % 6 {
+        0 => Color::Cyan,
+        1 => Color::Magenta,
+        2 => Color::LightCyan,
+        3 => Color::Yellow,
+        4 => Color::LightBlue,
+        _ => Color::LightMagenta,
+    }
+}
+
+fn row_shade(idx: usize) -> Style {
+    if idx % 2 == 0 {
+        Style::default().bg(Color::Rgb(20, 22, 30))
+    } else {
+        Style::default().bg(Color::Rgb(26, 28, 38))
+    }
+}
+
+fn confidence_bar(conf: u8) -> String {
+    let blocks = ["▁", "▂", "▃", "▄", "▅", "▆", "▇", "█"];
+    let slots = 10;
+    let filled = ((conf as usize * slots) / 100).min(slots);
+    let mut out = String::with_capacity(slots * 3);
+    for i in 0..slots {
+        if i < filled {
+            out.push_str(blocks[(conf as usize / 15).min(blocks.len() - 1)]);
+        } else {
+            out.push('·');
+        }
+    }
+    out
+}
+
+fn colorize_tags(tags: &[String], tick: usize) -> String {
+    // Color rendering is handled at the Span level; here we just reshuffle for a lively look.
+    let mut t = tags.to_vec();
+    if !t.is_empty() && tick % 2 == 1 {
+        t.rotate_left(1);
+    }
+    t.join(",")
 }

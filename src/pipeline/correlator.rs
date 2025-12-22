@@ -73,7 +73,10 @@ pub fn correlate_signals(signals: &[Signal]) -> Vec<Finding> {
                 disposition: FindingDisposition::Digest,
                 policy_gates: vec![],
                 blocked_by: None,
-                suppression_reason: aggregate_suppression_reason(&contributing, subject_corroborated),
+                suppression_reason: aggregate_suppression_reason(
+                    &contributing,
+                    subject_corroborated,
+                ),
             });
         }
 
@@ -99,7 +102,10 @@ pub fn correlate_signals(signals: &[Signal]) -> Vec<Finding> {
                 disposition: FindingDisposition::Digest,
                 policy_gates: vec![],
                 blocked_by: None,
-                suppression_reason: aggregate_suppression_reason(&contributing, subject_corroborated),
+                suppression_reason: aggregate_suppression_reason(
+                    &contributing,
+                    subject_corroborated,
+                ),
             });
         }
     }
@@ -178,10 +184,7 @@ fn is_generic_typosquat(subject: &str, candidate: &str) -> bool {
     cand_tokens.iter().all(|t| generic.contains(&t.as_str()))
 }
 
-fn aggregate_suppression_reason(
-    signals: &[&Signal],
-    subject_corroborated: bool,
-) -> Option<String> {
+fn aggregate_suppression_reason(signals: &[&Signal], subject_corroborated: bool) -> Option<String> {
     let mut reasons: Vec<String> = signals
         .iter()
         .filter_map(|s| s.suppression_reason.clone())

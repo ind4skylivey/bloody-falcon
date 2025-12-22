@@ -117,7 +117,14 @@ impl App {
 fn draw(f: &mut Frame<CrosstermBackend<io::Stdout>>, app: &App) {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
-        .constraints([Constraint::Length(3), Constraint::Min(10), Constraint::Length(1)].as_ref())
+        .constraints(
+            [
+                Constraint::Length(3),
+                Constraint::Min(10),
+                Constraint::Length(1),
+            ]
+            .as_ref(),
+        )
         .split(f.size());
 
     draw_header(f, chunks[0]);
@@ -155,11 +162,11 @@ fn draw_signal_list(f: &mut Frame<CrosstermBackend<io::Stdout>>, area: Rect, app
                 .unwrap_or_else(|| "Digest".to_string());
             let sev = format!("{:?}", s.severity);
             let line = Line::from(vec![
+                Span::styled(format!("{} ", i + 1), Style::default().fg(Color::DarkGray)),
                 Span::styled(
-                    format!("{} ", i + 1),
-                    Style::default().fg(Color::DarkGray),
+                    format!("{:?}", s.signal_type),
+                    Style::default().fg(Color::Cyan),
                 ),
-                Span::styled(format!("{:?}", s.signal_type), Style::default().fg(Color::Cyan)),
                 Span::raw(" "),
                 Span::raw(s.subject.clone()),
                 Span::raw(" "),

@@ -856,7 +856,7 @@ fn accent_color(tick: usize) -> Color {
 }
 
 fn row_shade(idx: usize) -> Style {
-    if idx % 2 == 0 {
+    if idx.is_multiple_of(2) {
         Style::default().bg(Color::Rgb(20, 22, 30))
     } else {
         Style::default().bg(Color::Rgb(26, 28, 38))

@@ -53,7 +53,9 @@ pub enum Severity {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct Indicator(pub String);
 
+#[allow(dead_code)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[allow(dead_code)]
 pub struct Score {
     pub confidence: u8,
     pub severity: Severity,
@@ -92,7 +94,9 @@ impl Default for FindingDisposition {
     }
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[allow(dead_code)]
 pub struct Policy {
     pub min_confidence_alert: u8,
     pub min_severity_alert: Severity,

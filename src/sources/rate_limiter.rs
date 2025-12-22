@@ -7,6 +7,7 @@ pub struct RateLimiter {
 }
 
 impl RateLimiter {
+    #[allow(dead_code)]
     pub fn new(min_interval: Duration) -> Self {
         Self {
             last: None,
@@ -14,6 +15,7 @@ impl RateLimiter {
         }
     }
 
+    #[allow(dead_code)]
     pub fn allow(&mut self) -> bool {
         let now = Instant::now();
         if let Some(last) = self.last {

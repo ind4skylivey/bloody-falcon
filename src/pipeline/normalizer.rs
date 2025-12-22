@@ -73,6 +73,7 @@ fn redact_text(input: &str, scope: &Scope) -> String {
     out
 }
 
+#[allow(dead_code)]
 pub fn indicators_to_strings(indicators: &[Indicator]) -> Vec<String> {
     indicators.iter().map(|i| i.0.clone()).collect()
 }

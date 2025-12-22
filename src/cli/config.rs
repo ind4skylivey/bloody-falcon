@@ -16,10 +16,13 @@ pub struct RunConfig {
     pub format: OutputFormat,
     pub output: PathBuf,
     pub manifest: Option<PathBuf>,
+    #[allow(dead_code)]
     pub policy: Option<PathBuf>,
     pub detectors: Option<Vec<String>>,
     pub sources: Option<Vec<String>>,
+    #[allow(dead_code)]
     pub alerts: Option<String>,
+    #[allow(dead_code)]
     pub webhook_url: Option<String>,
     pub trend_window: Option<String>,
 }

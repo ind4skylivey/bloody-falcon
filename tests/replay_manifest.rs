@@ -13,6 +13,7 @@ fn replay_manifest_is_deterministic() {
 
     let scope = load_scope(Path::new("clients/example.toml")).unwrap();
     let temp_dir = std::env::temp_dir().join("bf_replay_test");
+    let _ = std::fs::remove_dir_all(&temp_dir);
     let _ = std::fs::create_dir_all(&temp_dir);
 
     let cfg = RunConfig {

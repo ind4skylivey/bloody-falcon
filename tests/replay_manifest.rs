@@ -9,6 +9,7 @@ use bloody_falcon::core::types::OutputFormat;
 #[test]
 fn replay_manifest_is_deterministic() {
     std::env::set_var("BF_FIXED_TIME", "2025-01-02T00:00:00Z");
+    std::env::set_var("GITHUB_SHA", "test-hash");
     std::env::set_var("GIT_HASH", "test-hash");
 
     let scope = load_scope(Path::new("clients/example.toml")).unwrap();

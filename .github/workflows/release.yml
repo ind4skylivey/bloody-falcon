@@ -10,14 +10,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          override: true
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
       - name: Build release
-        run: cargo build --release
+        run: cargo build --locked --release
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: bloody-f4lcon-linux-x86_64
-          path: target/release/bloody-f4lcon
+          name: bloody-falcon-linux-x86_64
+          path: target/release/bloody-falcon
